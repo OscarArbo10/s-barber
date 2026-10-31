@@ -8,17 +8,25 @@ const { startAutomationCron } = require('./automationCron');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
 
 // Inicializar base de datos
 initialize();
 
 // Iniciar motor de recordatorios automáticos por WhatsApp
-startAutomationCron();
+try {
+  startAutomationCron();
+} catch (e) {
+  console.error('Error al iniciar cron:', e);
+}
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Healthcheck para Render
+app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
@@ -36,11 +44,9 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`\n==================================================`);
   console.log(`💈 S Barber Web App Activa`);
-  console.log(`🌐 Web Pública: http://localhost:${PORT}`);
-  console.log(`📋 Panel Admin: http://localhost:${PORT}/admin`);
-  console.log(`💬 Recordatorios WhatsApp: Automatizados (Cron cada 5 min)`);
+  console.log(`🌐 Escuchando en: http://${HOST}:${PORT}`);
   console.log(`==================================================\n`);
 });
