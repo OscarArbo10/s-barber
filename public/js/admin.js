@@ -65,7 +65,10 @@ async function adminApi(endpoint, options = {}) {
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
+  // Enviar contraseña de admin en header x-admin-password
   headers['x-admin-password'] = adminPassword;
+
+  console.log(`[API REQUEST] Enviando ${options.method || 'GET'} a ${API_BASE}/api${endpoint}`);
 
   try {
     const res = await fetch(`${API_BASE}/api${endpoint}`, { ...options, headers });
@@ -73,6 +76,7 @@ async function adminApi(endpoint, options = {}) {
     if (!res.ok) throw new Error(data.error || 'Error en la solicitud');
     return data;
   } catch (err) {
+    console.error(`[API ERROR] en ${endpoint}:`, err);
     showToast(err.message, 'error');
     throw err;
   }
@@ -243,12 +247,12 @@ async function loadAdminGallery() {
   container.innerHTML = gallery.map(item => {
     let preview = '';
     if (item.type === 'image') {
-      preview = `<img src="${item.filepath}" alt="${item.title}">`;
+      preview = `<img src="${resolveMediaUrl(item.filepath)}" alt="${item.title}">`;
     } else {
       if (item.filepath.includes('youtube') || item.filepath.includes('youtu.be')) {
         preview = `<div style="background:#000; color:#fff; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;"><i class="fab fa-youtube" style="font-size:2.5rem; color:red;"></i><small style="margin-top:4px;">YouTube</small></div>`;
       } else {
-        preview = `<video src="${item.filepath}" muted style="width:100%; height:100%; object-fit:cover;"></video>`;
+        preview = `<video src="${resolveMediaUrl(item.filepath)}" muted style="width:100%; height:100%; object-fit:cover;"></video>`;
       }
     }
 
@@ -268,54 +272,69 @@ async function loadAdminGallery() {
 
 async function uploadImage(e) {
   e.preventDefault();
-  const file = document.getElementById('image-file-input').files[0];
+  const fileInput = document.getElementById('image-file-input');
+  const file = fileInput.files[0];
   const title = document.getElementById('image-title-input').value;
-  if (!file) return;
+  if (!file) {
+    showToast('Selecciona un archivo de imagen', 'warning');
+    return;
+  }
 
   const formData = new FormData();
   formData.append('image', file);
   formData.append('title', title);
 
-  await adminApi('/gallery/image', {
-    method: 'POST',
-    body: formData
-  });
+  showToast('Subiendo imagen...', 'info');
 
-  showToast('Imagen subida a la galería', 'success');
-  document.getElementById('upload-image-form').reset();
-  loadAdminGallery();
+  try {
+    await adminApi('/gallery/image', {
+      method: 'POST',
+      body: formData
+    });
+
+    showToast('¡Imagen subida a la galería con éxito!', 'success');
+    document.getElementById('upload-image-form').reset();
+    await loadAdminGallery();
+  } catch (err) {
+    console.error('Error al subir imagen:', err);
+  }
 }
 
 async function uploadVideo(e) {
   e.preventDefault();
   const url = document.getElementById('video-url-input').value.trim();
-  const file = document.getElementById('video-file-input').files[0];
+  const fileInput = document.getElementById('video-file-input');
+  const file = fileInput.files[0];
   const title = document.getElementById('video-title-input').value.trim();
 
-  if (url) {
-    // Es enlace externo (YouTube/Vimeo)
-    await adminApi('/gallery/video-url', {
-      method: 'POST',
-      body: JSON.stringify({ url, title })
-    });
-    showToast('Video online añadido', 'success');
-  } else if (file) {
-    // Es archivo subido
-    const formData = new FormData();
-    formData.append('video', file);
-    formData.append('title', title);
-    await adminApi('/gallery/video', {
-      method: 'POST',
-      body: formData
-    });
-    showToast('Video subido correctamente', 'success');
-  } else {
-    showToast('Indica una URL de video o selecciona un archivo', 'warning');
-    return;
-  }
+  try {
+    if (url) {
+      showToast('Guardando video online...', 'info');
+      await adminApi('/gallery/video-url', {
+        method: 'POST',
+        body: JSON.stringify({ url, title })
+      });
+      showToast('¡Video online añadido con éxito!', 'success');
+    } else if (file) {
+      showToast('Subiendo video...', 'info');
+      const formData = new FormData();
+      formData.append('video', file);
+      formData.append('title', title);
+      await adminApi('/gallery/video', {
+        method: 'POST',
+        body: formData
+      });
+      showToast('¡Video subido con éxito!', 'success');
+    } else {
+      showToast('Indica una URL de video o selecciona un archivo', 'warning');
+      return;
+    }
 
-  document.getElementById('upload-video-form').reset();
-  loadAdminGallery();
+    document.getElementById('upload-video-form').reset();
+    await loadAdminGallery();
+  } catch (err) {
+    console.error('Error al guardar video:', err);
+  }
 }
 
 async function deleteGalleryItem(id) {
@@ -378,15 +397,19 @@ async function saveService(e) {
     price: parseFloat(document.getElementById('service-price').value)
   };
 
-  if (id) {
-    await adminApi(`/services/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-    showToast('Servicio actualizado', 'success');
-  } else {
-    await adminApi('/services', { method: 'POST', body: JSON.stringify(data) });
-    showToast('Servicio creado', 'success');
+  try {
+    if (id) {
+      await adminApi(`/services/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      showToast('Servicio actualizado con éxito', 'success');
+    } else {
+      await adminApi('/services', { method: 'POST', body: JSON.stringify(data) });
+      showToast('Servicio creado con éxito', 'success');
+    }
+    closeModal('service-modal');
+    await loadAdminServices();
+  } catch (err) {
+    console.error('Error al guardar servicio:', err);
   }
-  closeModal('service-modal');
-  loadAdminServices();
 }
 
 async function deleteService(id) {
@@ -443,15 +466,19 @@ async function saveBarber(e) {
     speciality: document.getElementById('barber-speciality').value
   };
 
-  if (id) {
-    await adminApi(`/barbers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-    showToast('Barbero actualizado', 'success');
-  } else {
-    await adminApi('/barbers', { method: 'POST', body: JSON.stringify(data) });
-    showToast('Barbero añadido', 'success');
+  try {
+    if (id) {
+      await adminApi(`/barbers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      showToast('Barbero actualizado con éxito', 'success');
+    } else {
+      await adminApi('/barbers', { method: 'POST', body: JSON.stringify(data) });
+      showToast('Barbero añadido con éxito', 'success');
+    }
+    closeModal('barber-modal');
+    await loadAdminBarbers();
+  } catch (err) {
+    console.error('Error al guardar barbero:', err);
   }
-  closeModal('barber-modal');
-  loadAdminBarbers();
 }
 
 async function deleteBarber(id) {
@@ -515,15 +542,19 @@ async function saveSchedule(e) {
     slot_duration: parseInt(document.getElementById('schedule-duration').value)
   };
 
-  if (id) {
-    await adminApi(`/schedule/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-    showToast('Horario actualizado', 'success');
-  } else {
-    await adminApi('/schedule', { method: 'POST', body: JSON.stringify(data) });
-    showToast('Franja horaria añadida', 'success');
+  try {
+    if (id) {
+      await adminApi(`/schedule/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      showToast('Horario actualizado con éxito', 'success');
+    } else {
+      await adminApi('/schedule', { method: 'POST', body: JSON.stringify(data) });
+      showToast('Franja horaria añadida con éxito', 'success');
+    }
+    closeModal('schedule-modal');
+    await loadAdminSchedule();
+  } catch (err) {
+    console.error('Error al guardar horario:', err);
   }
-  closeModal('schedule-modal');
-  loadAdminSchedule();
 }
 
 async function deleteSchedule(id) {
@@ -564,10 +595,14 @@ async function saveSocial(e) {
     url: document.getElementById('social-url').value
   };
 
-  await adminApi('/social-links', { method: 'POST', body: JSON.stringify(data) });
-  showToast('Enlace social añadido', 'success');
-  closeModal('social-modal');
-  loadAdminSocial();
+  try {
+    await adminApi('/social-links', { method: 'POST', body: JSON.stringify(data) });
+    showToast('Enlace social añadido con éxito', 'success');
+    closeModal('social-modal');
+    await loadAdminSocial();
+  } catch (err) {
+    console.error('Error al guardar red social:', err);
+  }
 }
 
 async function deleteSocial(id) {
@@ -594,7 +629,7 @@ async function loadAdminSettings() {
 
   const preview = document.getElementById('admin-logo-preview');
   if (settings.logo) {
-    preview.src = settings.logo;
+    preview.src = resolveMediaUrl(settings.logo);
     preview.style.display = 'block';
   } else {
     preview.style.display = 'none';
@@ -613,27 +648,43 @@ async function saveSettings(e) {
     email: document.getElementById('setting-email').value
   };
 
-  await adminApi('/settings', { method: 'POST', body: JSON.stringify(data) });
-  showToast('Ajustes y textos guardados', 'success');
-  loadAdminSettings();
+  showToast('Guardando cambios...', 'info');
+
+  try {
+    await adminApi('/settings', { method: 'POST', body: JSON.stringify(data) });
+    showToast('¡Ajustes y textos guardados con éxito!', 'success');
+    await loadAdminSettings();
+  } catch (err) {
+    console.error('Error al guardar ajustes:', err);
+  }
 }
 
 async function uploadLogo(e) {
   e.preventDefault();
-  const file = document.getElementById('logo-file-input').files[0];
-  if (!file) return;
+  const fileInput = document.getElementById('logo-file-input');
+  const file = fileInput.files[0];
+  if (!file) {
+    showToast('Selecciona un archivo de logo', 'warning');
+    return;
+  }
 
   const formData = new FormData();
   formData.append('logo', file);
 
-  const res = await adminApi('/upload/logo', {
-    method: 'POST',
-    body: formData
-  });
+  showToast('Subiendo logo...', 'info');
 
-  showToast('Logo de la tienda actualizado', 'success');
-  document.getElementById('upload-logo-form').reset();
-  loadAdminSettings();
+  try {
+    const res = await adminApi('/upload/logo', {
+      method: 'POST',
+      body: formData
+    });
+
+    showToast('¡Logo actualizado con éxito!', 'success');
+    document.getElementById('upload-logo-form').reset();
+    await loadAdminSettings();
+  } catch (err) {
+    console.error('Error al subir logo:', err);
+  }
 }
 
 // ============ SECURITY ============
@@ -661,6 +712,18 @@ async function changePassword(e) {
 // ============ MODALS & TOASTS ============
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('active');
+}
+
+// Helper para resolver rutas de imágenes relativas contra Render si es necesario
+function resolveMediaUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path;
+  }
+  if (API_BASE && path.startsWith('/uploads')) {
+    return `${API_BASE}${path}`;
+  }
+  return path;
 }
 
 function showToast(msg, type = 'success') {

@@ -42,6 +42,19 @@ async function api(endpoint, options = {}) {
   }
 }
 
+// Helper para resolver rutas de imágenes relativas contra Render si es necesario
+function resolveMediaUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path;
+  }
+  // Si tenemos API_BASE (ej: https://s-barber.onrender.com) y la ruta empieza con /uploads
+  if (API_BASE && path.startsWith('/uploads')) {
+    return `${API_BASE}${path}`;
+  }
+  return path;
+}
+
 // ============ SETTINGS ============
 async function loadSettings() {
   settings = await api('/settings');
@@ -53,7 +66,7 @@ async function loadSettings() {
   
   const navLogo = document.getElementById('nav-logo');
   if (settings.logo) {
-    navLogo.src = settings.logo;
+    navLogo.src = resolveMediaUrl(settings.logo);
     navLogo.style.display = 'block';
   }
   
@@ -177,10 +190,11 @@ function renderGallery(filter) {
   }
   
   container.innerHTML = items.map(item => {
+    const fullPath = resolveMediaUrl(item.filepath);
     if (item.type === 'image') {
       return `
-        <div class="gallery-item animate-on-scroll" onclick="openLightbox('image', '${item.filepath}')">
-          <img src="${item.filepath}" alt="${item.title || 'Galería'}" loading="lazy">
+        <div class="gallery-item animate-on-scroll" onclick="openLightbox('image', '${fullPath}')">
+          <img src="${fullPath}" alt="${item.title || 'Galería'}" loading="lazy">
           <div class="overlay">
             <h4>${item.title || ''}</h4>
           </div>
@@ -201,8 +215,8 @@ function renderGallery(filter) {
         }
       }
       return `
-        <div class="gallery-item animate-on-scroll" onclick="openLightbox('video', '${item.filepath}')">
-          <video src="${item.filepath}" muted></video>
+        <div class="gallery-item animate-on-scroll" onclick="openLightbox('video', '${fullPath}')">
+          <video src="${fullPath}" muted></video>
           <div class="overlay" style="opacity:1;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
             <i class="fas fa-play-circle" style="font-size:3rem;color:white;"></i>
           </div>
