@@ -9,12 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ============ API FETCH HELPER ============
+// Si estamos en Netlify u otro dominio externo, usamos el backend de Render; si estamos en localhost, ruta relativa.
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? '' 
+  : 'https://s-barber.onrender.com';
+
 // ============ AUTH ============
 async function handleLogin(e) {
   e.preventDefault();
-  const input = document.getElementById('admin-pass-input').value;
+  const input = document.getElementById('admin-pass-input').value.trim();
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: input })
@@ -25,9 +31,12 @@ async function handleLogin(e) {
       sessionStorage.setItem('sbarber_admin_token', adminPassword);
       checkAuthAndInit();
     } else {
+      document.getElementById('login-error').textContent = data.error || 'Contraseña incorrecta';
       document.getElementById('login-error').style.display = 'block';
     }
   } catch (err) {
+    console.error('Error de login:', err);
+    document.getElementById('login-error').textContent = 'Error de conexión con el servidor. Revisa tu backend en Render.';
     document.getElementById('login-error').style.display = 'block';
   }
 }
@@ -59,7 +68,7 @@ async function adminApi(endpoint, options = {}) {
   headers['x-admin-password'] = adminPassword;
 
   try {
-    const res = await fetch(`/api${endpoint}`, { ...options, headers });
+    const res = await fetch(`${API_BASE}/api${endpoint}`, { ...options, headers });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error en la solicitud');
     return data;

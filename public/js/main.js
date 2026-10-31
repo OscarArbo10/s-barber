@@ -24,10 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('current-year').textContent = new Date().getFullYear();
 });
 
+// API Base
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? '' 
+  : 'https://s-barber.onrender.com';
+
 // ============ API HELPERS ============
 async function api(endpoint, options = {}) {
   try {
-    const res = await fetch(`/api${endpoint}`, options);
+    const res = await fetch(`${API_BASE}/api${endpoint}`, options);
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error en la solicitud');
     return data;
