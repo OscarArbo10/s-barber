@@ -7,6 +7,14 @@ const apiRoutes = require('./routes/api');
 const { startAutomationCron } = require('./automationCron');
 
 const app = express();
+// Proteger el proceso contra excepciones no capturadas para que Node.js 24 no se caiga
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+});
+
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 

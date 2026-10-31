@@ -82,22 +82,30 @@ const db = {
 
   // SETTINGS
   async getSettings() {
-    if (isSupabaseConfigured) {
-      const { data, error } = await supabase.from('settings').select('*');
-      if (error) throw error;
-      const map = {};
-      data.forEach(r => map[r.key] = r.value);
-      return map;
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('settings').select('*');
+        if (!error && data && data.length > 0) {
+          const map = {};
+          data.forEach(r => map[r.key] = r.value);
+          return map;
+        }
+      } catch (err) {
+        console.error('[SUPABASE-ERROR] Error leyendo settings, usando fallback local:', err.message || err);
+      }
     }
     return readLocalDb().settings;
   },
 
   async updateSettings(settingsMap) {
-    if (isSupabaseConfigured) {
-      const entries = Object.entries(settingsMap).map(([key, value]) => ({ key, value: String(value) }));
-      const { error } = await supabase.from('settings').upsert(entries, { onConflict: 'key' });
-      if (error) throw error;
-      return true;
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const entries = Object.entries(settingsMap).map(([key, value]) => ({ key, value: String(value) }));
+        const { error } = await supabase.from('settings').upsert(entries, { onConflict: 'key' });
+        if (error) console.error('[SUPABASE-ERROR] Error guardando settings:', error.message);
+      } catch (err) {
+        console.error('[SUPABASE-ERROR]:', err.message || err);
+      }
     }
     const local = readLocalDb();
     Object.assign(local.settings, settingsMap);
