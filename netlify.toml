@@ -1,19 +1,27 @@
 [build]
   publish = "public"
 
-# Redirigir el panel admin para que cargue public/admin.html
+# Redirigir las peticiones de API hacia el backend en Render
+[[redirects]]
+  from = "/api/*"
+  to = "https://s-barber.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Redirigir archivos multimedia subidos al backend
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://s-barber.onrender.com/uploads/:splat"
+  status = 200
+  force = true
+
+# Redirigir el panel admin para cargar public/admin.html
 [[redirects]]
   from = "/admin"
   to = "/admin.html"
   status = 200
 
-# Redirigir la API si está alojada en otro backend o en local
-# [[redirects]]
-#   from = "/api/*"
-#   to = "https://tu-backend-api.onrender.com/api/:splat"
-#   status = 200
-
-# Redirigir rutas desconocidas a la página principal
+# Redirigir la raíz y resto de rutas a index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
