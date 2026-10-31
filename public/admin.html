@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S Barber - Panel de Administración</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+  <!-- PANTALLA DE LOGIN -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div style="font-size: 2.5rem; color: var(--accent); margin-bottom: 12px;">💈</div>
+      <h1>S BARBER</h1>
+      <p>Panel de Control y Administración</p>
+      <div class="login-error" id="login-error">Contraseña incorrecta</div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Contraseña de Administrador</label>
+          <input type="password" id="admin-pass-input" placeholder="Introduce tu clave..." required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+          <i class="fas fa-lock-open"></i> Acceder al Panel
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANEL DE ADMINISTRACIÓN -->
+  <div class="admin-layout" id="admin-layout">
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2 id="admin-sidebar-title">S Barber</h2>
+        <p>Panel de Gestión</p>
+      </div>
+      <div class="sidebar-nav">
+        <div class="sidebar-section">Operativa</div>
+        <button class="sidebar-link active" onclick="showPage('dashboard')">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </button>
+        <button class="sidebar-link" onclick="showPage('reservations')">
+          <i class="fas fa-calendar-alt"></i> Reservas y WhatsApp
+        </button>
+
+        <div class="sidebar-section">Gestión de Barbería</div>
+        <button class="sidebar-link" onclick="showPage('gallery')">
+          <i class="fas fa-photo-film"></i> Galería (Fotos y Videos)
+        </button>
+        <button class="sidebar-link" onclick="showPage('services')">
+          <i class="fas fa-cut"></i> Servicios & Precios
+        </button>
+        <button class="sidebar-link" onclick="showPage('barbers')">
+          <i class="fas fa-user-tie"></i> Equipo de Barberos
+        </button>
+        <button class="sidebar-link" onclick="showPage('schedule')">
+          <i class="fas fa-clock"></i> Horarios (Mañana/Tarde/Noche)
+        </button>
+
+        <div class="sidebar-section">Configuración Web</div>
+        <button class="sidebar-link" onclick="showPage('social')">
+          <i class="fas fa-share-alt"></i> Redes Sociales
+        </button>
+        <button class="sidebar-link" onclick="showPage('branding')">
+          <i class="fas fa-paint-brush"></i> Logo y Presentación
+        </button>
+        <button class="sidebar-link" onclick="showPage('security')">
+          <i class="fas fa-shield-alt"></i> Seguridad y Clave
+        </button>
+
+        <div style="padding: 24px 20px;">
+          <a href="/" target="_blank" class="btn btn-outline-dark" style="color: white; border-color: rgba(255,255,255,0.3); width: 100%; justify-content: center;">
+            <i class="fas fa-external-link-alt"></i> Ver Web Pública
+          </a>
+          <button onclick="logout()" class="btn btn-danger" style="width: 100%; justify-content: center; margin-top: 10px;">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div style="display:flex; align-items:center; gap: 12px;">
+          <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 id="page-title">Dashboard General</h1>
+        </div>
+        <div class="admin-topbar-actions">
+          <span style="font-size: 0.85rem; color: var(--dark-gray);"><i class="fas fa-user-circle"></i> Administrador</span>
+        </div>
+      </header>
+
+      <div class="admin-content">
+
+        <!-- ============ 1. DASHBOARD ============ -->
+        <section class="admin-page active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-calendar-day"></i></div>
+              <div class="stat-info">
+                <h3 id="stat-today">0</h3>
+                <p>Citas de Hoy</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-hourglass-half"></i></div>
+              <div class="stat-info">
+                <h3 id="stat-pending">0</h3>
+                <p>Pendientes</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-euro-sign"></i></div>
+              <div class="stat-info">
+                <h3 id="stat-revenue">0€</h3>
+                <p>Ingresos del Mes</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+              <div class="stat-info">
+                <h3 id="stat-clients">0</h3>
+                <p>Clientes Registrados</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Próximas Citas y Recordatorios</h3>
+              <button class="btn btn-sm btn-primary" onclick="showPage('reservations')">Ver Todas</button>
+            </div>
+            <div class="admin-card-body" style="padding: 0; overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Fecha / Hora</th>
+                    <th>Cliente</th>
+                    <th>Servicio</th>
+                    <th>Barbero</th>
+                    <th>Estado</th>
+                    <th>Acción WhatsApp</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-reservations-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 2. RESERVAS Y WHATSAPP ============ -->
+        <section class="admin-page" id="page-reservations">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Gestión de Reservas</h3>
+              <div class="filter-bar" style="margin: 0;">
+                <input type="date" id="filter-date" onchange="loadReservations()">
+                <select id="filter-status" onchange="loadReservations()">
+                  <option value="">Todos los Estados</option>
+                  <option value="pending">Pendiente</option>
+                  <option value="confirmed">Confirmada</option>
+                  <option value="completed">Completada</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+                <button class="btn btn-sm btn-dark" onclick="resetReservationFilters()">Limpiar Filtros</button>
+              </div>
+            </div>
+            <div class="admin-card-body" style="padding: 0; overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Hora / Turno</th>
+                    <th>Cliente</th>
+                    <th>Teléfono</th>
+                    <th>Servicio</th>
+                    <th>Barbero</th>
+                    <th>Estado</th>
+                    <th>WhatsApp</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="reservations-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 3. GALERÍA (IMÁGENES Y VIDEOS) ============ -->
+        <section class="admin-page" id="page-gallery">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Módulo de Presentación: Añadir Multimedia</h3>
+            </div>
+            <div class="admin-card-body">
+              <div class="form-row">
+                <!-- Subir Imagen -->
+                <div style="border: 1px solid var(--light-gray); padding: 20px; border-radius: var(--radius-md);">
+                  <h4 style="margin-bottom: 12px;"><i class="fas fa-image" style="color:var(--accent);"></i> Subir Fotografía</h4>
+                  <form id="upload-image-form" onsubmit="uploadImage(event)">
+                    <div class="form-group">
+                      <label>Archivo de Imagen (JPG, PNG, WebP)</label>
+                      <input type="file" id="image-file-input" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                      <label>Título o Pie de Foto</label>
+                      <input type="text" id="image-title-input" placeholder="Ej: Degradado fade con navaja">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-cloud-upload-alt"></i> Subir Imagen</button>
+                  </form>
+                </div>
+
+                <!-- Añadir Video -->
+                <div style="border: 1px solid var(--light-gray); padding: 20px; border-radius: var(--radius-md);">
+                  <h4 style="margin-bottom: 12px;"><i class="fas fa-video" style="color:var(--accent);"></i> Añadir Video (Archivo o YouTube)</h4>
+                  <form id="upload-video-form" onsubmit="uploadVideo(event)">
+                    <div class="form-group">
+                      <label>URL de YouTube / Video Online</label>
+                      <input type="url" id="video-url-input" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <div style="text-align: center; margin: 8px 0; font-size: 0.8rem; color: var(--medium-gray);">— O SUBIR ARCHIVO MP4 —</div>
+                    <div class="form-group">
+                      <label>Archivo de Video Local (MP4 / WebM)</label>
+                      <input type="file" id="video-file-input" accept="video/*">
+                    </div>
+                    <div class="form-group">
+                      <label>Título del Video</label>
+                      <input type="text" id="video-title-input" placeholder="Ej: Tour por la Barbería">
+                    </div>
+                    <button type="submit" class="btn btn-dark btn-sm"><i class="fas fa-plus"></i> Guardar Video</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Galería Actual en la Página Principal</h3>
+            </div>
+            <div class="admin-card-body">
+              <div class="gallery-admin-grid" id="admin-gallery-grid">
+                <!-- Dynamic -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 4. SERVICIOS ============ -->
+        <section class="admin-page" id="page-services">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Servicios y Precios</h3>
+              <button class="btn btn-primary btn-sm" onclick="openServiceModal()">
+                <i class="fas fa-plus"></i> Añadir Servicio
+              </button>
+            </div>
+            <div class="admin-card-body" style="padding: 0;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Duración (min)</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="services-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 5. BARBEROS ============ -->
+        <section class="admin-page" id="page-barbers">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Equipo de Barberos</h3>
+              <button class="btn btn-primary btn-sm" onclick="openBarberModal()">
+                <i class="fas fa-plus"></i> Añadir Barbero
+              </button>
+            </div>
+            <div class="admin-card-body" style="padding: 0;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Especialidad / Perfil</th>
+                    <th>Activo</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="barbers-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 6. HORARIOS ============ -->
+        <section class="admin-page" id="page-schedule">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Configuración de Turnos y Horarios (Mañana, Tarde y Noche)</h3>
+              <button class="btn btn-primary btn-sm" onclick="openScheduleModal()">
+                <i class="fas fa-plus"></i> Configurar Franja Horaria
+              </button>
+            </div>
+            <div class="admin-card-body" style="padding: 0;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Turno / Período</th>
+                    <th>Hora Inicio</th>
+                    <th>Hora Fin</th>
+                    <th>Intervalo de Cita</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="schedule-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 7. REDES SOCIALES ============ -->
+        <section class="admin-page" id="page-social">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Enlaces a Redes Sociales</h3>
+              <button class="btn btn-primary btn-sm" onclick="openSocialModal()">
+                <i class="fas fa-plus"></i> Añadir Red Social
+              </button>
+            </div>
+            <div class="admin-card-body" style="padding: 0;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Plataforma</th>
+                    <th>Enlace (URL)</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="social-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 8. BRANDING Y LOGO ============ -->
+        <section class="admin-page" id="page-branding">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Logo de la Barbería</h3>
+            </div>
+            <div class="admin-card-body">
+              <div class="logo-preview">
+                <img id="admin-logo-preview" src="" alt="Sin logo">
+                <div>
+                  <h4 style="margin-bottom: 6px;">Logo Actual de S Barber</h4>
+                  <p style="font-size: 0.85rem; color: var(--dark-gray); margin-bottom: 12px;">
+                    Sube el logo de la tienda en formato PNG, JPG o SVG. Se mostrará en la barra de navegación y en la cabecera.
+                  </p>
+                  <form id="upload-logo-form" onsubmit="uploadLogo(event)" style="display:flex; gap:10px; align-items:center;">
+                    <input type="file" id="logo-file-input" accept="image/*" required>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-upload"></i> Subir Logo</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Información y Textos de la Web</h3>
+            </div>
+            <div class="admin-card-body">
+              <form id="settings-form" onsubmit="saveSettings(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Nombre Comercial</label>
+                    <input type="text" id="setting-shop_name">
+                  </div>
+                  <div class="form-group">
+                    <label>Teléfono Principal / WhatsApp</label>
+                    <input type="text" id="setting-phone">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Título Hero Principal</label>
+                    <input type="text" id="setting-hero_title">
+                  </div>
+                  <div class="form-group">
+                    <label>Subtítulo Hero</label>
+                    <input type="text" id="setting-hero_subtitle">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Descripción de Presentación</label>
+                  <textarea id="setting-description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Dirección Física</label>
+                    <input type="text" id="setting-address">
+                  </div>
+                  <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="setting-email">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 9. SEGURIDAD ============ -->
+        <section class="admin-page" id="page-security">
+          <div class="admin-card" style="max-width: 500px;">
+            <div class="admin-card-header">
+              <h3>Cambiar Contraseña de Administración</h3>
+            </div>
+            <div class="admin-card-body">
+              <form id="password-form" onsubmit="changePassword(event)">
+                <div class="form-group">
+                  <label>Nueva Contraseña</label>
+                  <input type="password" id="new-password" required minlength="4">
+                </div>
+                <div class="form-group">
+                  <label>Confirmar Nueva Contraseña</label>
+                  <input type="password" id="confirm-password" required minlength="4">
+                </div>
+                <button type="submit" class="btn btn-dark"><i class="fas fa-key"></i> Actualizar Contraseña</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODALES DE CREACIÓN Y EDICIÓN -->
+  
+  <!-- Modal Servicio -->
+  <div class="modal-overlay" id="service-modal">
+    <div class="admin-modal">
+      <h3 id="service-modal-title">Añadir Servicio</h3>
+      <form id="service-form" onsubmit="saveService(event)">
+        <input type="hidden" id="service-id">
+        <div class="form-group">
+          <label>Nombre del Servicio *</label>
+          <input type="text" id="service-name" required placeholder="Ej: Corte Fade + Barba">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="service-desc" rows="2" placeholder="Detalles de lo que incluye el servicio"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Duración (Minutos) *</label>
+            <input type="number" id="service-duration" value="30" min="5" step="5" required>
+          </div>
+          <div class="form-group">
+            <label>Precio (€) *</label>
+            <input type="number" id="service-price" value="15" min="0" step="0.5" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" onclick="closeModal('service-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Servicio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Barbero -->
+  <div class="modal-overlay" id="barber-modal">
+    <div class="admin-modal">
+      <h3 id="barber-modal-title">Añadir Barbero</h3>
+      <form id="barber-form" onsubmit="saveBarber(event)">
+        <input type="hidden" id="barber-id">
+        <div class="form-group">
+          <label>Nombre del Barbero *</label>
+          <input type="text" id="barber-name" required placeholder="Ej: David">
+        </div>
+        <div class="form-group">
+          <label>Especialidad / Cargo</label>
+          <input type="text" id="barber-speciality" placeholder="Ej: Experto en navaja y diseño de barbas">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" onclick="closeModal('barber-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Barbero</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Horario -->
+  <div class="modal-overlay" id="schedule-modal">
+    <div class="admin-modal">
+      <h3 id="schedule-modal-title">Configurar Franja Horaria</h3>
+      <form id="schedule-form" onsubmit="saveSchedule(event)">
+        <input type="hidden" id="schedule-id">
+        <div class="form-group">
+          <label>Turno *</label>
+          <select id="schedule-period" required>
+            <option value="morning">🌅 Mañana</option>
+            <option value="afternoon">☀️ Tarde</option>
+            <option value="night">🌙 Noche</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hora Inicio *</label>
+            <input type="time" id="schedule-start" required>
+          </div>
+          <div class="form-group">
+            <label>Hora Fin *</label>
+            <input type="time" id="schedule-end" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Duración de cada Turno (Minutos)</label>
+          <input type="number" id="schedule-duration" value="30" min="10" step="5" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" onclick="closeModal('schedule-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Franja</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Red Social -->
+  <div class="modal-overlay" id="social-modal">
+    <div class="admin-modal">
+      <h3 id="social-modal-title">Añadir Red Social</h3>
+      <form id="social-form" onsubmit="saveSocial(event)">
+        <input type="hidden" id="social-id">
+        <div class="form-group">
+          <label>Plataforma *</label>
+          <select id="social-platform" required>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="tiktok">TikTok</option>
+            <option value="x">X (Twitter)</option>
+            <option value="youtube">YouTube</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="web">Página Web / Blog</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>URL / Enlace Completo *</label>
+          <input type="url" id="social-url" required placeholder="https://instagram.com/sbarber">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" onclick="closeModal('social-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Enlace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR TOAST -->
+  <div class="toast-container" id="admin-toast-container"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

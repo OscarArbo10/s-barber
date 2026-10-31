@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S Barber - Tu Barbería de Confianza</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="navbar-brand">
+      <img id="nav-logo" src="" alt="S Barber" style="display:none;">
+      <span class="brand-text" id="brand-text">S BARBER</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#inicio">Inicio</a></li>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#galeria">Galería</a></li>
+      <li><a href="#reservar">Reservar</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <div class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">✂️ Barbería Premium</div>
+      <h1 id="hero-title">S <span>BARBER</span></h1>
+      <p class="hero-subtitle" id="hero-subtitle">Estilo & Precisión</p>
+      <p class="hero-description" id="hero-description">Tu barbería de confianza. Estilo, elegancia y precisión en cada corte.</p>
+      <div class="hero-buttons">
+        <a href="#reservar" class="btn btn-primary btn-lg">
+          <i class="fas fa-calendar-check"></i> Reservar Cita
+        </a>
+        <a href="#galeria" class="btn btn-outline btn-lg">
+          <i class="fas fa-images"></i> Ver Galería
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section section-gray" id="servicios">
+    <div class="section-header animate-on-scroll">
+      <span class="section-badge">Lo que ofrecemos</span>
+      <h2>Nuestros Servicios</h2>
+      <p>Cada servicio es una experiencia única, diseñada para que te sientas y luzcas increíble</p>
+    </div>
+    <div class="services-grid" id="services-list">
+      <!-- Dynamic content -->
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="section" id="galeria">
+    <div class="section-header animate-on-scroll">
+      <span class="section-badge">Nuestro trabajo</span>
+      <h2>Galería</h2>
+      <p>Descubre nuestro estilo y la calidad de nuestro trabajo</p>
+    </div>
+    <div class="gallery-tabs">
+      <button class="gallery-tab active" onclick="filterGallery('all')">Todos</button>
+      <button class="gallery-tab" onclick="filterGallery('image')">Imágenes</button>
+      <button class="gallery-tab" onclick="filterGallery('video')">Videos</button>
+    </div>
+    <div class="gallery-grid" id="gallery-grid">
+      <!-- Dynamic content -->
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section class="section section-gray" id="reservar">
+    <div class="section-header animate-on-scroll">
+      <span class="section-badge">Agenda tu cita</span>
+      <h2>Reservar Cita</h2>
+      <p>Selecciona el servicio, fecha y hora que prefieras</p>
+    </div>
+    <div class="booking-container animate-on-scroll">
+      <div class="booking-steps">
+        <div class="booking-step active" data-step="1" onclick="goToStep(1)">
+          <span class="step-number">1</span> Servicio
+        </div>
+        <div class="booking-step" data-step="2" onclick="goToStep(2)">
+          <span class="step-number">2</span> Fecha y Hora
+        </div>
+        <div class="booking-step" data-step="3" onclick="goToStep(3)">
+          <span class="step-number">3</span> Datos
+        </div>
+        <div class="booking-step" data-step="4">
+          <span class="step-number">4</span> Confirmar
+        </div>
+      </div>
+      <div class="booking-body">
+        <!-- Step 1: Service & Barber -->
+        <div class="step-content active" id="step-1">
+          <h3 style="font-family:'Playfair Display',serif;margin-bottom:20px;">Elige tu servicio</h3>
+          <div class="select-grid" id="booking-services">
+            <!-- Dynamic -->
+          </div>
+          <h3 style="font-family:'Playfair Display',serif;margin:30px 0 20px;">Elige tu barbero</h3>
+          <div class="select-grid" id="booking-barbers">
+            <!-- Dynamic -->
+          </div>
+          <div style="text-align:right;margin-top:30px;">
+            <button class="btn btn-primary" onclick="goToStep(2)">
+              Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Calendar & Time -->
+        <div class="step-content" id="step-2">
+          <div class="calendar-header">
+            <h3 id="calendar-month-title">Octubre 2026</h3>
+            <div class="calendar-nav">
+              <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+              <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="calendar-grid" id="calendar-grid">
+            <!-- Dynamic -->
+          </div>
+          <div id="time-slots-container" style="display:none;">
+            <h3 style="font-family:'Playfair Display',serif;margin-bottom:20px;">Horarios disponibles</h3>
+            
+            <div class="time-period" id="morning-slots">
+              <div class="time-period-header">
+                <span class="time-period-icon">🌅</span>
+                <h4>Mañana</h4>
+                <span>(09:00 - 13:00)</span>
+              </div>
+              <div class="time-slots-grid" id="morning-grid"></div>
+            </div>
+
+            <div class="time-period" id="afternoon-slots">
+              <div class="time-period-header">
+                <span class="time-period-icon">☀️</span>
+                <h4>Tarde</h4>
+                <span>(14:00 - 18:00)</span>
+              </div>
+              <div class="time-slots-grid" id="afternoon-grid"></div>
+            </div>
+
+            <div class="time-period" id="night-slots">
+              <div class="time-period-header">
+                <span class="time-period-icon">🌙</span>
+                <h4>Noche</h4>
+                <span>(18:00 - 21:00)</span>
+              </div>
+              <div class="time-slots-grid" id="night-grid"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;margin-top:30px;">
+            <button class="btn btn-dark" onclick="goToStep(1)">
+              <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <button class="btn btn-primary" onclick="goToStep(3)">
+              Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Client Data -->
+        <div class="step-content" id="step-3">
+          <h3 style="font-family:'Playfair Display',serif;margin-bottom:20px;">Tus datos</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre completo *</label>
+              <input type="text" id="client-name" placeholder="Tu nombre" required>
+            </div>
+            <div class="form-group">
+              <label>Teléfono (WhatsApp) *</label>
+              <input type="tel" id="client-phone" placeholder="+34 600 000 000" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notas adicionales</label>
+            <textarea id="client-notes" rows="3" placeholder="Algún detalle o preferencia especial..."></textarea>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:30px;">
+            <button class="btn btn-dark" onclick="goToStep(2)">
+              <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <button class="btn btn-primary" onclick="goToStep(4)">
+              Revisar <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Confirmation -->
+        <div class="step-content" id="step-4">
+          <h3 style="font-family:'Playfair Display',serif;margin-bottom:20px;">Confirmar Reserva</h3>
+          <div class="booking-summary">
+            <h4>📋 Resumen de tu cita</h4>
+            <div class="summary-row">
+              <span class="label">Servicio</span>
+              <span class="value" id="summary-service">-</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Barbero</span>
+              <span class="value" id="summary-barber">-</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Fecha</span>
+              <span class="value" id="summary-date">-</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Hora</span>
+              <span class="value" id="summary-time">-</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Nombre</span>
+              <span class="value" id="summary-name">-</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Teléfono</span>
+              <span class="value" id="summary-phone">-</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Precio</span>
+              <span class="value" id="summary-price">-</span>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <button class="btn btn-dark" onclick="goToStep(3)">
+              <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <button class="btn btn-primary btn-lg" onclick="confirmBooking()">
+              <i class="fas fa-check"></i> Confirmar Reserva
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL & CONTACT -->
+  <section class="section section-dark" id="contacto">
+    <div class="section-header animate-on-scroll">
+      <span class="section-badge">Encuéntranos</span>
+      <h2>Contacto & Redes</h2>
+      <p>Síguenos en nuestras redes sociales y mantente al día</p>
+    </div>
+    <div class="social-links-bar animate-on-scroll" id="social-links">
+      <!-- Dynamic -->
+    </div>
+    <div style="max-width:600px;margin:40px auto 0;text-align:center;" class="animate-on-scroll">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+        <div>
+          <i class="fas fa-map-marker-alt" style="font-size:1.5rem;color:var(--accent);margin-bottom:10px;"></i>
+          <p id="contact-address" style="color:var(--medium-gray);font-size:0.9rem;">Calle Principal 123</p>
+        </div>
+        <div>
+          <i class="fas fa-phone" style="font-size:1.5rem;color:var(--accent);margin-bottom:10px;"></i>
+          <p id="contact-phone" style="color:var(--medium-gray);font-size:0.9rem;">+34 600 000 000</p>
+        </div>
+      </div>
+      <a href="#" id="whatsapp-general" class="btn btn-whatsapp btn-lg" target="_blank">
+        <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-col">
+        <h3 id="footer-brand">S Barber</h3>
+        <p id="footer-description">Tu barbería de confianza. Estilo, elegancia y precisión en cada corte.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Enlaces</h3>
+        <p><a href="#inicio">Inicio</a></p>
+        <p><a href="#servicios">Servicios</a></p>
+        <p><a href="#galeria">Galería</a></p>
+        <p><a href="#reservar">Reservar</a></p>
+      </div>
+      <div class="footer-col">
+        <h3>Contacto</h3>
+        <p id="footer-address"><i class="fas fa-map-marker-alt"></i> Calle Principal 123</p>
+        <p id="footer-phone"><i class="fas fa-phone"></i> +34 600 000 000</p>
+        <p id="footer-email"><i class="fas fa-envelope"></i> info@sbarber.com</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="current-year">2026</span> <span id="footer-copyright">S Barber</span>. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+    <div id="lightbox-content"></div>
+  </div>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal">
+      <div class="modal-icon">✅</div>
+      <h3>¡Reserva Confirmada!</h3>
+      <p>Tu cita ha sido registrada correctamente. Recibirás un recordatorio por WhatsApp.</p>
+      <div class="modal-buttons">
+        <button class="btn btn-primary" onclick="closeModal()">Entendido</button>
+        <a href="#" id="modal-whatsapp-btn" class="btn btn-whatsapp" target="_blank">
+          <i class="fab fa-whatsapp"></i> Añadir al WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+[build]
+  publish = "public"
+
+# Redirigir el panel admin para que cargue public/admin.html
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+# Redirigir la API si está alojada en otro backend o en local
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://tu-backend-api.onrender.com/api/:splat"
+#   status = 200
+
+# Redirigir rutas desconocidas a la página principal
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

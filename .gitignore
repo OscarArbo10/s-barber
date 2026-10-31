@@ -1,0 +1,7 @@
+node_modules/
+.env
+sbarber_data.json
+public/uploads/*
+!public/uploads/.gitkeep
+.DS_Store
+Thumbs.db
