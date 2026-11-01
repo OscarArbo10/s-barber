@@ -17,8 +17,17 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 
 // ============ AUTH ============
 async function handleLogin(e) {
-  e.preventDefault();
-  const input = document.getElementById('admin-pass-input').value.trim();
+  if (e && e.preventDefault) e.preventDefault();
+  const inputEl = document.getElementById('admin-pass-input');
+  const input = inputEl ? inputEl.value.trim() : '';
+  const btn = document.querySelector('#login-form button[type="submit"]');
+  const originalText = btn ? btn.innerHTML : '';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+  }
+
   try {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
@@ -38,20 +47,27 @@ async function handleLogin(e) {
     console.error('Error de login:', err);
     document.getElementById('login-error').textContent = 'Error de conexión con el servidor. Revisa tu backend en Render.';
     document.getElementById('login-error').style.display = 'block';
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
   }
 }
 
-function checkAuthAndInit() {
+async function checkAuthAndInit() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-layout').classList.add('active');
-  loadDashboardStats();
-  loadReservations();
-  loadAdminGallery();
-  loadAdminServices();
-  loadAdminBarbers();
-  loadAdminSchedule();
-  loadAdminSocial();
-  loadAdminSettings();
+
+  // Ejecutar de forma segura con try/catch para que un fallo en un módulo no bloquee los demás
+  try { await loadDashboardStats(); } catch(e){ console.error('Stats:', e); }
+  try { await loadReservations(); } catch(e){ console.error('Reservations:', e); }
+  try { await loadAdminGallery(); } catch(e){ console.error('Gallery:', e); }
+  try { await loadAdminServices(); } catch(e){ console.error('Services:', e); }
+  try { await loadAdminBarbers(); } catch(e){ console.error('Barbers:', e); }
+  try { await loadAdminSchedule(); } catch(e){ console.error('Schedule:', e); }
+  try { await loadAdminSocial(); } catch(e){ console.error('Social:', e); }
+  try { await loadAdminSettings(); } catch(e){ console.error('Settings:', e); }
 }
 
 function logout() {
