@@ -371,6 +371,8 @@ async function uploadImage(e) {
     showToast('Error al subir imagen: ' + err.message, 'error');
   }
 }
+
+async function uploadVideo(e) {
   e.preventDefault();
   const url = document.getElementById('video-url-input').value.trim();
   const fileInput = document.getElementById('video-file-input');
