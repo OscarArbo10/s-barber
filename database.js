@@ -127,10 +127,21 @@ const db = {
   },
 
   async addService(srv) {
-    if (isSupabaseConfigured) {
-      const { data, error } = await supabase.from('services').insert([srv]).select();
-      if (error) throw error;
-      return data[0];
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const itemToInsert = {
+          name: srv.name,
+          description: srv.description || '',
+          duration: Number(srv.duration) || 30,
+          price: Number(srv.price) || 0,
+          active: 1
+        };
+        const { data, error } = await supabase.from('services').insert([itemToInsert]).select();
+        if (!error && data && data.length > 0) return data[0];
+        console.error('[SUPABASE-SERVICES-ERROR]:', error?.message);
+      } catch (e) {
+        console.error('[SUPABASE-SERVICES-CATCH]:', e.message);
+      }
     }
     const local = readLocalDb();
     const item = { id: Date.now(), ...srv, active: 1 };
@@ -180,10 +191,19 @@ const db = {
   },
 
   async addBarber(b) {
-    if (isSupabaseConfigured) {
-      const { data, error } = await supabase.from('barbers').insert([b]).select();
-      if (error) throw error;
-      return data[0];
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const itemToInsert = {
+          name: b.name,
+          speciality: b.speciality || '',
+          active: 1
+        };
+        const { data, error } = await supabase.from('barbers').insert([itemToInsert]).select();
+        if (!error && data && data.length > 0) return data[0];
+        console.error('[SUPABASE-BARBER-ERROR]:', error?.message);
+      } catch (e) {
+        console.error('[SUPABASE-BARBER-CATCH]:', e.message);
+      }
     }
     const local = readLocalDb();
     const item = { id: Date.now(), ...b, active: 1 };
@@ -280,10 +300,21 @@ const db = {
   },
 
   async addGalleryItem(item) {
-    if (isSupabaseConfigured) {
-      const { data, error } = await supabase.from('gallery').insert([item]).select();
-      if (error) throw error;
-      return data[0];
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const itemToInsert = {
+          type: item.type,
+          filepath: item.filepath,
+          title: item.title || '',
+          description: item.description || '',
+          sort_order: 0
+        };
+        const { data, error } = await supabase.from('gallery').insert([itemToInsert]).select();
+        if (!error && data && data.length > 0) return data[0];
+        console.error('[SUPABASE-GALLERY-ERROR]:', error?.message);
+      } catch (e) {
+        console.error('[SUPABASE-GALLERY-CATCH]:', e.message);
+      }
     }
     const local = readLocalDb();
     const newItem = { id: Date.now(), ...item, created_at: new Date().toISOString() };

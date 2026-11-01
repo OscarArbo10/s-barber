@@ -270,6 +270,49 @@ async function loadAdminGallery() {
   }).join('');
 }
 
+// Helper para convertir archivo a Base64 en el navegador
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
+async function uploadLogo(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById('logo-file-input');
+  const file = fileInput.files[0];
+  if (!file) {
+    showToast('Selecciona un archivo de logo', 'warning');
+    return;
+  }
+
+  showToast('Procesando y guardando logo...', 'info');
+
+  try {
+    const base64 = await fileToBase64(file);
+    
+    // Guardar vía JSON directo (mucho más rápido y sin problemas de multipart ni borrado en Render)
+    const res = await adminApi('/upload/logo', {
+      method: 'POST',
+      body: JSON.stringify({ logo_base64: base64 })
+    });
+
+    // Actualizar vista previa de inmediato
+    const preview = document.getElementById('admin-logo-preview');
+    preview.src = base64;
+    preview.style.display = 'block';
+
+    showToast('¡Logo guardado permanentemente!', 'success');
+    document.getElementById('upload-logo-form').reset();
+  } catch (err) {
+    console.error('Error al subir logo:', err);
+    showToast('Error al guardar logo: ' + err.message, 'error');
+  }
+}
+
 async function uploadImage(e) {
   e.preventDefault();
   const fileInput = document.getElementById('image-file-input');
@@ -280,27 +323,27 @@ async function uploadImage(e) {
     return;
   }
 
-  const formData = new FormData();
-  formData.append('image', file);
-  formData.append('title', title);
-
-  showToast('Subiendo imagen...', 'info');
+  showToast('Subiendo imagen a la galería...', 'info');
 
   try {
+    const base64 = await fileToBase64(file);
+
     await adminApi('/gallery/image', {
       method: 'POST',
-      body: formData
+      body: JSON.stringify({
+        image_base64: base64,
+        title: title
+      })
     });
 
-    showToast('¡Imagen subida a la galería con éxito!', 'success');
+    showToast('¡Imagen agregada a la galería con éxito!', 'success');
     document.getElementById('upload-image-form').reset();
     await loadAdminGallery();
   } catch (err) {
     console.error('Error al subir imagen:', err);
+    showToast('Error al subir imagen: ' + err.message, 'error');
   }
 }
-
-async function uploadVideo(e) {
   e.preventDefault();
   const url = document.getElementById('video-url-input').value.trim();
   const fileInput = document.getElementById('video-file-input');
@@ -639,23 +682,29 @@ async function loadAdminSettings() {
 async function saveSettings(e) {
   e.preventDefault();
   const data = {
-    shop_name: document.getElementById('setting-shop_name').value,
-    phone: document.getElementById('setting-phone').value,
-    hero_title: document.getElementById('setting-hero_title').value,
-    hero_subtitle: document.getElementById('setting-hero_subtitle').value,
-    description: document.getElementById('setting-description').value,
-    address: document.getElementById('setting-address').value,
-    email: document.getElementById('setting-email').value
+    shop_name: document.getElementById('setting-shop_name').value || '',
+    phone: document.getElementById('setting-phone').value || '',
+    hero_title: document.getElementById('setting-hero_title').value || '',
+    hero_subtitle: document.getElementById('setting-hero_subtitle').value || '',
+    description: document.getElementById('setting-description').value || '',
+    address: document.getElementById('setting-address').value || '',
+    email: document.getElementById('setting-email').value || ''
   };
 
   showToast('Guardando cambios...', 'info');
 
   try {
-    await adminApi('/settings', { method: 'POST', body: JSON.stringify(data) });
+    await adminApi('/settings', { 
+      method: 'POST', 
+      body: JSON.stringify(data) 
+    });
     showToast('¡Ajustes y textos guardados con éxito!', 'success');
-    await loadAdminSettings();
+    if (data.shop_name) {
+      document.getElementById('admin-sidebar-title').textContent = data.shop_name;
+    }
   } catch (err) {
     console.error('Error al guardar ajustes:', err);
+    showToast('Error al guardar: ' + err.message, 'error');
   }
 }
 

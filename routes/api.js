@@ -104,59 +104,114 @@ router.post('/settings/password', authMiddleware, async (req, res) => {
   res.json({ success: true });
 });
 
-// ============ LOGO UPLOAD ============
+// ============ LOGO UPLOAD (Base64 y Archivo) ============
 router.post('/upload/logo', authMiddleware, uploadLogo.single('logo'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No se subió archivo' });
-  const filepath = `/uploads/logo/${req.file.filename}`;
-  await db.updateSettings({ logo: filepath });
-  res.json({ success: true, filepath });
+  try {
+    let logoUrl = '';
+    if (req.body?.logo_base64) {
+      logoUrl = req.body.logo_base64;
+    } else if (req.file) {
+      // Convertir a base64 Data URI para que persista para siempre sin depender del disco de Render
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const mime = req.file.mimetype || 'image/png';
+      logoUrl = `data:${mime};base64,${fileBuffer.toString('base64')}`;
+      // Limpiar archivo temporal
+      try { fs.unlinkSync(req.file.path); } catch(e){}
+    } else {
+      return res.status(400).json({ error: 'No se recibió ninguna imagen' });
+    }
+
+    await db.updateSettings({ logo: logoUrl });
+    console.log('[LOGO-SAVED] Logo guardado exitosamente.');
+    res.json({ success: true, filepath: logoUrl });
+  } catch (err) {
+    console.error('[LOGO-ERROR]:', err);
+    res.status(500).json({ error: 'Error procesando el logo' });
+  }
 });
 
 // ============ GALLERY (PHOTOS & VIDEOS) ============
 router.get('/gallery', async (req, res) => {
-  const gallery = await db.getGallery();
-  res.json(gallery);
+  try {
+    const gallery = await db.getGallery();
+    res.json(gallery || []);
+  } catch (err) {
+    res.json([]);
+  }
 });
 
 router.post('/gallery/image', authMiddleware, uploadGallery.single('image'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No se subió imagen' });
-  const filepath = `/uploads/gallery/${req.file.filename}`;
-  const { title, description } = req.body;
-  const item = await db.addGalleryItem({
-    type: 'image',
-    filepath,
-    title: title || '',
-    description: description || '',
-    sort_order: 0
-  });
-  res.json({ success: true, item });
+  try {
+    let imgUrl = '';
+    const { title, description, image_base64 } = req.body;
+
+    if (image_base64) {
+      imgUrl = image_base64;
+    } else if (req.file) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const mime = req.file.mimetype || 'image/jpeg';
+      imgUrl = `data:${mime};base64,${fileBuffer.toString('base64')}`;
+      try { fs.unlinkSync(req.file.path); } catch(e){}
+    } else {
+      return res.status(400).json({ error: 'No se subió imagen' });
+    }
+
+    const item = await db.addGalleryItem({
+      type: 'image',
+      filepath: imgUrl,
+      title: title || '',
+      description: description || '',
+      sort_order: 0
+    });
+    console.log('[GALLERY-IMAGE-SAVED] Imagen guardada en galería.');
+    res.json({ success: true, item });
+  } catch (err) {
+    console.error('[GALLERY-ERROR]:', err);
+    res.status(500).json({ error: 'Error guardando imagen' });
+  }
 });
 
 router.post('/gallery/video', authMiddleware, uploadVideo.single('video'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No se subió video' });
-  const filepath = `/uploads/videos/${req.file.filename}`;
-  const { title, description } = req.body;
-  const item = await db.addGalleryItem({
-    type: 'video',
-    filepath,
-    title: title || '',
-    description: description || '',
-    sort_order: 0
-  });
-  res.json({ success: true, item });
+  try {
+    const { title, description, video_url } = req.body;
+    let finalUrl = video_url || '';
+
+    if (!finalUrl && req.file) {
+      finalUrl = `/uploads/videos/${req.file.filename}`;
+    }
+
+    if (!finalUrl) {
+      return res.status(400).json({ error: 'Se requiere una URL o archivo de video' });
+    }
+
+    const item = await db.addGalleryItem({
+      type: 'video',
+      filepath: finalUrl,
+      title: title || '',
+      description: description || '',
+      sort_order: 0
+    });
+    res.json({ success: true, item });
+  } catch (err) {
+    res.status(500).json({ error: 'Error guardando video' });
+  }
 });
 
 router.post('/gallery/video-url', authMiddleware, async (req, res) => {
-  const { url, title, description } = req.body;
-  if (!url) return res.status(400).json({ error: 'URL requerida' });
-  const item = await db.addGalleryItem({
-    type: 'video',
-    filepath: url,
-    title: title || '',
-    description: description || '',
-    sort_order: 0
-  });
-  res.json({ success: true, item });
+  try {
+    const { url, title, description } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL requerida' });
+    const item = await db.addGalleryItem({
+      type: 'video',
+      filepath: url,
+      title: title || '',
+      description: description || '',
+      sort_order: 0
+    });
+    res.json({ success: true, item });
+  } catch (err) {
+    res.status(500).json({ error: 'Error guardando video' });
+  }
 });
 
 router.delete('/gallery/:id', authMiddleware, async (req, res) => {
