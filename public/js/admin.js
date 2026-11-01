@@ -4,6 +4,17 @@ let adminPassword = sessionStorage.getItem('sbarber_admin_token') || '';
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
+  // Permitir login con la tecla Enter en el input
+  const inputEl = document.getElementById('admin-pass-input');
+  if (inputEl) {
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleLogin();
+      }
+    });
+  }
+
   if (adminPassword) {
     checkAuthAndInit();
   }

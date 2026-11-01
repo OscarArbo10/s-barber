@@ -16,12 +16,12 @@
       <h1>S BARBER</h1>
       <p>Panel de Control y Administración</p>
       <div class="login-error" id="login-error">Contraseña incorrecta</div>
-      <form id="login-form" onsubmit="handleLogin(event)">
+      <form id="login-form">
         <div class="form-group">
           <label>Contraseña de Administrador</label>
           <input type="password" id="admin-pass-input" placeholder="Introduce tu clave..." required autofocus>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+        <button type="button" id="admin-login-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="handleLogin()">
           <i class="fas fa-lock-open"></i> Acceder al Panel
         </button>
       </form>
@@ -585,6 +585,6 @@
   <!-- CONTENEDOR TOAST -->
   <div class="toast-container" id="admin-toast-container"></div>
 
-  <script src="/js/admin.js"></script>
+  <script src="/js/admin.js?v=20261101_2"></script>
 </body>
 </html>
